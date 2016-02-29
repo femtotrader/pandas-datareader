@@ -14,6 +14,7 @@ import nose
 import pandas.util.testing as tm
 from nose.tools import assert_equal
 from pandas.util.testing import assert_series_equal
+from pandas_datareader.tests._utils import _get_session
 
 
 def assert_n_failed_equals_n_null_columns(wngs, obj, cls=SymbolWarning):
@@ -130,6 +131,27 @@ class TestGoogle(tm.TestCase):
 
         with tm.assertRaises(ValueError):
             web.get_data_google('F', retry_count=-1)
+    
+
+class TestGoogleIntraday(tm.TestCase):
+    def test_google_intra(self):
+        session = _get_session()
+        freq = '5Min'
+        df = web.DataReader(name='GOOG', data_source='google-intraday', 
+                start='2016-02-01', end='2016-02-05', freq=freq, session=session)
+        print(df)
+        assert 'Open' in df.columns
+        assert 'High' in df.columns
+        assert 'Low' in df.columns
+        assert 'Close' in df.columns
+        idx = pd.Series(df.index)
+        assert (idx - idx.shift()).value_counts().index[0] == pd.offsets.to_timedelta(freq)
+
+    #def test_google_intra_multi(self):
+    #    session = _get_session()
+    #    df = web.DataReader(['GOOG', 'IBM'], 'google-intraday', '2016-02-01', '2016-02-05', session=session)
+    #    print(df)
+
 
 if __name__ == '__main__':
     nose.runmodule(argv=[__file__, '-vvs', '-x', '--pdb', '--pdb-failure'],

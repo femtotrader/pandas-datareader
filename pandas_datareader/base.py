@@ -6,7 +6,7 @@ import datetime as dt
 import requests
 from requests_file import FileAdapter
 
-from pandas import to_datetime
+from pandas import to_datetime, offsets
 import pandas.compat as compat
 from pandas.core.common import is_number
 from pandas import Panel, DataFrame
@@ -42,13 +42,14 @@ class _BaseReader(object):
     _chunk_size = 1024 * 1024
     _format = 'string'
 
-    def __init__(self, symbols, start=None, end=None,
+    def __init__(self, symbols, start=None, end=None, freq=None,
                  retry_count=3, pause=0.1, session=None):
         self.symbols = symbols
 
         start, end = self._sanitize_dates(start, end)
         self.start = start
         self.end = end
+        self.freq = self._sanitize_freq(freq)
 
         if not isinstance(retry_count, int) or retry_count < 0:
             raise ValueError("'retry_count' must be integer larger than 0")
@@ -161,14 +162,23 @@ class _BaseReader(object):
             end = dt.datetime.today()
         return start, end
 
+    def _sanitize_freq(self, freq):
+        """
+        Return sanitized freq
+        """
+        try:
+            return offsets.to_timedelta(freq)
+        except:
+            return freq
+
 
 class _DailyBaseReader(_BaseReader):
     """ Base class for Google / Yahoo daily reader """
 
-    def __init__(self, symbols=None, start=None, end=None, retry_count=3,
+    def __init__(self, symbols=None, start=None, end=None, freq=None, retry_count=3,
                  pause=0.001, session=None, chunksize=25):
         super(_DailyBaseReader, self).__init__(symbols=symbols,
-                                               start=start, end=end,
+                                               start=start, end=end, freq=freq,
                                                retry_count=retry_count,
                                                pause=pause, session=session)
         self.chunksize = chunksize

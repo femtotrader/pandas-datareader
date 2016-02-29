@@ -6,6 +6,7 @@ import warnings
 
 from pandas_datareader.google.daily import GoogleDailyReader
 from pandas_datareader.google.quotes import GoogleQuotesReader
+from pandas_datareader.google.intra import GoogleIntraReader
 
 from pandas_datareader.yahoo.daily import YahooDailyReader
 from pandas_datareader.yahoo.quotes import YahooQuotesReader
@@ -32,6 +33,10 @@ def get_data_google(*args, **kwargs):
     return GoogleDailyReader(*args, **kwargs).read()
 
 
+def get_intra_google(*args, **kwargs):
+    return GoogleIntraReader(*args, **kwargs).read()
+
+
 def get_data_yahoo(*args, **kwargs):
     return YahooDailyReader(*args, **kwargs).read()
 
@@ -48,7 +53,7 @@ def get_quote_google(*args, **kwargs):
     return GoogleQuotesReader(*args, **kwargs).read()
 
 
-def DataReader(name, data_source=None, start=None, end=None,
+def DataReader(name, data_source=None, start=None, end=None, freq=None,
                retry_count=3, pause=0.001, session=None):
     """
     Imports data from a number of online sources.
@@ -119,6 +124,12 @@ def DataReader(name, data_source=None, start=None, end=None,
 
     elif data_source == "google":
         return GoogleDailyReader(symbols=name, start=start, end=end,
+                                 chunksize=25,
+                                 retry_count=retry_count, pause=pause,
+                                 session=session).read()
+
+    elif data_source == "google-intraday":
+        return GoogleIntraReader(symbols=name, start=start, end=end, freq=freq,
                                  chunksize=25,
                                  retry_count=retry_count, pause=pause,
                                  session=session).read()

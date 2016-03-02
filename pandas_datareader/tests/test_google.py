@@ -14,8 +14,9 @@ import nose
 import pandas.util.testing as tm
 from nose.tools import assert_equal
 from pandas.util.testing import assert_series_equal
-from pandas_datareader.tests._utils import _get_session
+from pandas_datareader.tests._utils import _get_session, _get_logger
 
+logger = _get_logger()
 
 def assert_n_failed_equals_n_null_columns(wngs, obj, cls=SymbolWarning):
     all_nan_cols = pd.Series(dict((k, pd.isnull(v).all()) for k, v in
@@ -136,9 +137,9 @@ class TestGoogle(tm.TestCase):
 class TestGoogleIntraday(tm.TestCase):
     def test_google_intra(self):
         session = _get_session()
-        freq = '5Min'
+        freq = '1Min'
         df = web.DataReader(name='GOOG', data_source='google-intraday', 
-                start='2016-02-01', end='2016-02-05', freq=freq, session=session)
+                start='2016-02-20', end='2016-02-05', freq=freq, session=session)
         print(df)
         assert 'Open' in df.columns
         assert 'High' in df.columns
@@ -147,10 +148,12 @@ class TestGoogleIntraday(tm.TestCase):
         idx = pd.Series(df.index)
         assert (idx - idx.shift()).value_counts().index[0] == pd.offsets.to_timedelta(freq)
 
-    #def test_google_intra_multi(self):
-    #    session = _get_session()
-    #    df = web.DataReader(['GOOG', 'IBM'], 'google-intraday', '2016-02-01', '2016-02-05', session=session)
-    #    print(df)
+    def test_google_intra_multi(self):
+        session = _get_session()
+        freq = '1Min'
+        df = web.DataReader(name=['GOOG', 'MSFT'], data_source='google-intraday', start='2016-02-01', end='2016-02-05', freq=freq, session=session)
+        print(df)
+        print(df.loc['Close', :, :])
 
 
 if __name__ == '__main__':

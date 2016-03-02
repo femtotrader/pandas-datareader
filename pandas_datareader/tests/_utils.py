@@ -19,3 +19,14 @@ def _get_session(expire_after=None):
         import requests
         session = requests.Session()
     return session
+
+
+def _get_logger():
+    import logging
+    logger = logging.getLogger()
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG)
+    return logger

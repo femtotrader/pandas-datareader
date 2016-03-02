@@ -2,6 +2,9 @@ import pandas as pd
 
 from pandas_datareader.base import _DailyBaseReader
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 class CANDLE():
     DATE = 'Date'
@@ -58,11 +61,11 @@ class GoogleIntraReader(_DailyBaseReader):
 
     @property
     def interval_seconds(self):
-        return self.freq.total_seconds()
+        return int(self.freq.total_seconds())
 
     def _get_params(self, symbol, format_data='d,c,h,l,o,v', df='cpct', auto='', ei='', 
-                    exchange='NASD', period='3d'):
-        ts = timestamp_to_unix(self.start)
+                    exchange='NASD', period='600d'):
+        ts = int(timestamp_to_unix(self.start))
         params = {
             'q': symbol,  # Stock symbol
             'x': exchange,  # Stock exchange symbol on which stock is traded (ex: NASD ETR ...)

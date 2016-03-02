@@ -16,6 +16,9 @@ from pandas.compat import StringIO, bytes_to_str
 from pandas_datareader._utils import RemoteDataError, SymbolWarning
 
 import requests_ftp
+import logging
+logger = logging.getLogger(__name__)
+
 requests_ftp.monkeypatch_session()
 
 
@@ -75,6 +78,7 @@ class _BaseReader(object):
 
     def read(self):
         """ read data """
+        logger.info("_read_one_data with: %s %s" % (self.url, self.params))
         return self._read_one_data(self.url, self.params)
 
     def _read_one_data(self, url, params):
@@ -93,6 +97,7 @@ class _BaseReader(object):
         """
         response = self._get_response(url, params=params)
         text = self._sanitize_response(response)
+        #logger.debug("Read: %s" % text)
         out = StringIO()
         if isinstance(text, compat.binary_type):
             out.write(bytes_to_str(text))
@@ -120,6 +125,7 @@ class _BaseReader(object):
 
         # initial attempt + retry
         for i in range(self.retry_count + 1):
+            logger.info("get %s with %s" % (url, params))
             response = self.session.get(url, params=params)
             if response.status_code == requests.codes.ok:
                 return response
@@ -147,6 +153,7 @@ class _BaseReader(object):
         if start is None - default is 2010/01/01
         if end is None - default is today
         """
+        logger.info("start=%s end=%s" % (start, end))
         if is_number(start):
             # regard int as year
             start = dt.datetime(start, 1, 1)
@@ -160,6 +167,7 @@ class _BaseReader(object):
             start = dt.datetime(2010, 1, 1)
         if end is None:
             end = dt.datetime.today()
+        logger.info("sanitized to: start=%s end=%s" % (start, end))
         return start, end
 
     def _sanitize_freq(self, freq):
